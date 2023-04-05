@@ -157,11 +157,19 @@
     <ClCompile Include="..\plugin_sdk\clipper.cpp" />
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ezreal.cpp" />
+    <ClCompile Include="permashow.cpp" />
+    <ClCompile Include="twitch.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
+    <ClInclude Include="ezreal.h" />
+    <ClInclude Include="permashow.hpp" />
+    <ClInclude Include="twitch.h" />
+    <ClInclude Include="utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

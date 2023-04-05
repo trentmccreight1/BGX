@@ -19,6 +19,18 @@
     <ClCompile Include="..\plugin_sdk\clipper.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="ezreal.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="permashow.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="twitch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -30,5 +42,9 @@
     <ClInclude Include="..\plugin_sdk\clipper.h">
       <Filter>plugin_sdk</Filter>
     </ClInclude>
+    <ClInclude Include="ezreal.h" />
+    <ClInclude Include="permashow.hpp" />
+    <ClInclude Include="twitch.h" />
+    <ClInclude Include="utils.hpp" />
   </ItemGroup>
 </Project>
