@@ -1,4 +1,5 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
+#include "../plugin_sdk/plugin_sdk.hpp"
 #include "twitch.h"
 #include "permashow.hpp"
 

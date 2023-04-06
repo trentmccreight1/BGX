@@ -25,6 +25,24 @@ bool permashow_update = false;
 
 Permashow Permashow::Instance;
 
+const float gold_r = 255 / 255.f;
+const float gold_g = 215 / 255.f;
+const float gold_b = 0 / 255.f;
+
+uint32_t GetColorWithAnimation(float speed) {
+	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
+	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+	float time = std::fmod(millis * speed / 1000.0f, 1.0f);
+
+	int a = static_cast<int>(round(std::sin(time * 2 * M_PI) * 127.5f + 127.5f));
+
+	int r = static_cast<int>(round(gold_r * 255));
+	int g = static_cast<int>(round(gold_g * 255));
+	int b = static_cast<int>(round(gold_b * 255));
+
+	return MAKE_COLOR(r, g, b, a);
+}
+
 uint32_t GetRainbowColor(float speed) {
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
@@ -171,8 +189,8 @@ void Permashow_OnDraw()
 
 	draw_manager->add_filled_rect(position, position + box_size, background_color->get_color());
 	draw_manager->add_filled_rect(position, position + Permashow::Instance.TitleBoxSize, title_background_color->get_color());
-	draw_manager->add_rect(position, position + Permashow::Instance.TitleBoxSize, GetRainbowColor(1.0f));
-	draw_manager->add_rect(position, position + box_size, GetRainbowColor(1.0f));
+	draw_manager->add_rect(position, position + Permashow::Instance.TitleBoxSize, GetColorWithAnimation(1.0f));
+	draw_manager->add_rect(position, position + box_size, GetColorWithAnimation(1.0f));
 
 	draw_manager->add_text_on_screen(position + (Permashow::Instance.TitleBoxSize / 2.f) - (Permashow::Instance.TitleSize / 2.f), GetRainbowColor(1.0f), font_size, "%s", Permashow::Instance.Title.c_str());
 

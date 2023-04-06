@@ -24,6 +24,7 @@
     <ProjectGuid>{748fcd42-bc59-4a0c-a9a4-6ffa08cf89c2}</ProjectGuid>
     <RootNamespace>SimplePlugin</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>TrentAIO</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

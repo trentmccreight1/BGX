@@ -204,7 +204,7 @@ namespace ezreal
 				spells::e->cast(new_position);
 
 
-				myhero->print_chat(0x01, "Antigap W "); // get end pos check if endpos is my pos if so do the thing 
+				//myhero->print_chat(0x01, "Antigap W "); // get end pos check if endpos is my pos if so do the thing 
 			}
 		}
 
