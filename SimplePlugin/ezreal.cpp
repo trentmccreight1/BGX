@@ -197,7 +197,7 @@ namespace ezreal
 
 				if (new_position.is_under_enemy_turret() || new_position.is_wall())
 				{
-					myhero->print_chat(0x01, "Rejected Either Wall or Enemy turret. "); // get end pos check if endpos is my pos if so do the thing 
+					//myhero->print_chat(0x01, "Rejected Either Wall or Enemy turret. "); // get end pos check if endpos is my pos if so do the thing 
 					return;
 				}
 				//if (iswall(new_position))
