@@ -182,31 +182,31 @@ namespace ezreal
 	void wantidash()
 	{
 		if (settings::automatic::e_gapclose && spells::q->is_ready())
-		for (auto& enemy : entitylist->get_enemy_heroes())
-		{
-			if (enemy != nullptr && enemy->is_valid_target(300) && enemy->is_dashing())
+			for (auto& enemy : entitylist->get_enemy_heroes())
 			{
-
-
-				vector from = myhero->get_position();
-				vector to = enemy->get_position();
-
-				float opposite_range = 450;
-				vector opposite_direction = (from - to).normalized();
-				vector new_position = from.extend(from + opposite_direction, opposite_range);
-
-				if (new_position.is_under_enemy_turret() || new_position.is_wall())
+				if (enemy != nullptr && enemy->is_valid_target(300) && enemy->is_dashing())
 				{
-					//myhero->print_chat(0x01, "Rejected Either Wall or Enemy turret. "); // get end pos check if endpos is my pos if so do the thing 
-					return;
+
+
+					vector from = myhero->get_position();
+					vector to = enemy->get_position();
+
+					float opposite_range = 450;
+					vector opposite_direction = (from - to).normalized();
+					vector new_position = from.extend(from + opposite_direction, opposite_range);
+
+					if (new_position.is_under_enemy_turret() || new_position.is_wall())
+					{
+						//myhero->print_chat(0x01, "Rejected Either Wall or Enemy turret. "); // get end pos check if endpos is my pos if so do the thing 
+						return;
+					}
+					//if (iswall(new_position))
+					spells::e->cast(new_position);
+
+
+					//myhero->print_chat(0x01, "Antigap W "); // get end pos check if endpos is my pos if so do the thing 
 				}
-				//if (iswall(new_position))
-				spells::e->cast(new_position);
-
-
-				//myhero->print_chat(0x01, "Antigap W "); // get end pos check if endpos is my pos if so do the thing 
 			}
-		}
 
 
 	}
@@ -780,71 +780,96 @@ namespace ezreal
 		{
 			auto combo = main_tab->add_tab("combo.tab", "Combo Settings");
 			{
-				auto q = combo->add_tab("q.settings", "Q settings");
+				auto q_config = combo->add_tab("q.settings", "Q settings");
+				q_config->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				{
-					settings::combo::use_q = q->add_checkbox("use.q", "Use Q", true);
-					settings::combo::q_slider = q->add_slider("q.slider", " ^~ Q Range", 1150, 100, 1150);
-					settings::combo::q_check_block = q->add_checkbox("check.block", " ^~ Check if enemy AA block", true);
-					settings::combo::auto_q = q->add_hotkey("autoq.key", " ^~ Auto Q", TreeHotkeyMode::Toggle, 0x53, true);
-					settings::combo::auto_q_turret = q->add_checkbox("autoq.turret", " ^~ Disable Auto Q under turret", false);
+					settings::combo::use_q = q_config->add_checkbox("use.q", "Use Q", true);
+					settings::combo::q_slider = q_config->add_slider("q.slider", " ^~ Q Range", 1150, 100, 1150);
+					settings::combo::q_check_block = q_config->add_checkbox("check.block", " ^~ Check if enemy AA block", true);
+					settings::combo::auto_q = q_config->add_hotkey("autoq.key", " ^~ Auto Q", TreeHotkeyMode::Toggle, 0x53, true);
+					settings::combo::auto_q_turret = q_config->add_checkbox("autoq.turret", " ^~ Disable Auto Q under turret", false);
 				}
 
-				auto w = combo->add_tab("w.settings", "W settings");
+				auto w_config = combo->add_tab("w.settings", "W settings");
+				w_config->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 				{
-					settings::combo::use_w = w->add_checkbox("use.w", "Use W", true);
-					settings::combo::w_slider = w->add_slider("w.slider", " ^~ W Range", 1100, 100, 1150);
+					settings::combo::use_w = w_config->add_checkbox("use.w", "Use W", true);
+					settings::combo::w_slider = w_config->add_slider("w.slider", " ^~ W Range", 1100, 100, 1150);
 				}
 
-				auto r = combo->add_tab("r.settings", "R Settings");
+				auto r_config = combo->add_tab("r.settings", "R Settings");
+				r_config->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 				{
-					settings::combo::use_r = r->add_checkbox("use.r", "Use R", false);
-					settings::combo::semi_r = r->add_hotkey("semir.key", "Semi-R", TreeHotkeyMode::Hold, 0x54, false);
-					settings::combo::semir_mode = r->add_combobox("semir.mode", " ^~ Mode", { {"Mouse Pos", nullptr}, {"Prediction", nullptr} }, 1);
-					settings::combo::use_r_hard = r->add_checkbox("r.only.cc", " ^~ Only CC/Dash", true);
-					settings::combo::min_r = r->add_slider("min.range.slider", " ^~ Min R Range", 200, 100, 2000);
-					settings::combo::max_r = r->add_slider("max.range.slider", " ^~ Max R Range", 1000, 1000, 3000);
+					settings::combo::use_r = r_config->add_checkbox("use.r", "Use R", false);
+					settings::combo::semi_r = r_config->add_hotkey("semir.key", "Semi-R", TreeHotkeyMode::Hold, 0x54, false);
+					settings::combo::semir_mode = r_config->add_combobox("semir.mode", " ^~ Mode", { {"Mouse Pos", nullptr}, {"Prediction", nullptr} }, 1);
+					settings::combo::use_r_hard = r_config->add_checkbox("r.only.cc", " ^~ Only CC/Dash", true);
+					settings::combo::min_r = r_config->add_slider("min.range.slider", " ^~ Min R Range", 200, 100, 2000);
+					settings::combo::max_r = r_config->add_slider("max.range.slider", " ^~ Max R Range", 1000, 1000, 3000);
 				}
 			}
 
 			auto harass = main_tab->add_tab("harass.tab", "Harass Settings");
 			{
-				auto q = harass->add_tab("q.settings", "Q Settings");
+				auto q_harass = harass->add_tab("q.settings", "Q Settings");
+				q_harass->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				{
-					settings::harass::use_q = q->add_checkbox("use.q", "Use Q", true);
+					settings::harass::use_q = q_harass->add_checkbox("use.q", "Use Q in Harass", true);
 				}
 
-				auto w = harass->add_tab("w.settings", "W Settings");
+				auto w_harass = harass->add_tab("w.settings", "W Settings");
+				w_harass->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 				{
-					settings::harass::use_w = w->add_checkbox("use.w", "Use W", true);
+					settings::harass::use_w = w_harass->add_checkbox("use.w", "Use W in Harass", true);
 				}
 			}
 
 			auto farming = main_tab->add_tab("farming.tab", "Farming settings");
 			{
 				settings::farm_key = farming->add_hotkey("farm.key", "Farm key", TreeHotkeyMode::Toggle, 0x04, true);
+
 				auto laneclear = farming->add_tab("laneclear.tab", "Laneclear Settings");
 				{
-					laneclear->add_separator("q.settings", "Q Settings");
-					settings::laneclear::use_q = laneclear->add_checkbox("q.use", "Use Q", true);
-					settings::laneclear::minion_out_aa = laneclear->add_checkbox("out.aa", " ^~ If minion killable out AA", false);
+					auto q_laneclear = laneclear->add_tab("q.settings", "Q Settings");
+					q_laneclear->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+					{
+						settings::laneclear::use_q = q_laneclear->add_checkbox("q.use", "Use Q", true);
+						settings::laneclear::minion_out_aa = q_laneclear->add_checkbox("out.aa", " ^~ If minion killable out AA", false);
+					}
 				}
+
 				auto lasthit = farming->add_tab("lasthit.tab", "Lasthit Settings");
 				{
-					lasthit->add_separator("q.settings", "Q Settings");
-					settings::lasthit::use_q = lasthit->add_checkbox("q.use", "Use Q", true);
+					auto q_lasthit = lasthit->add_tab("q.settings", "Q Settings");
+					q_lasthit->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+					{
+						settings::lasthit::use_q = q_lasthit->add_checkbox("q.use", "Use Q", true);
+					}
 				}
+
 				auto jungleclear = farming->add_tab("jungleclear.tab", "Jungleclear Settings");
 				{
-					jungleclear->add_separator("q.settings", "Q Settings");
-					settings::jungleclear::use_q = jungleclear->add_checkbox("q.use", "Use Q", true);
-					jungleclear->add_separator("w.settings", "W Settings");
-					settings::jungleclear::use_w_epicmonster = jungleclear->add_checkbox("use.w.epic", "Use W in Epic monsters", true);
+					auto q_jungleclear = jungleclear->add_tab("q.settings", "Q Settings");
+					q_jungleclear->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+					{
+						settings::jungleclear::use_q = q_jungleclear->add_checkbox("q.use", "Use Q", true);
+					}
+
+					auto w_jungleclear = jungleclear->add_tab("w.settings", "W Settings");
+					w_jungleclear->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+					{
+						settings::jungleclear::use_w_epicmonster = w_jungleclear->add_checkbox("use.w.epic", "Use W in Epic monsters", true);
+					}
 				}
+
 				auto misc = farming->add_tab("misc.tab", "Misc Settings");
 				{
-					misc->add_separator("w.settings", "W Settings");
-					settings::clearobj::w_in_objects = misc->add_checkbox("use.w.obj", "Use W in objects", true);
-					settings::clearobj::w_mode = misc->add_combobox("w.mode", " ^~ Mode", { {"Before Attack (Orbwalker)", nullptr}, {"After Attack (Orbwalker)", nullptr} }, 1);
+					auto w_misc = misc->add_tab("w.settings", "W Settings");
+					w_misc->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+					{
+						settings::clearobj::w_in_objects = w_misc->add_checkbox("use.w.obj", "Use W in objects", true);
+						settings::clearobj::w_mode = w_misc->add_combobox("w.mode", " ^~ Mode", { {"Before Attack (Orbwalker)", nullptr}, {"After Attack (Orbwalker)", nullptr} }, 1);
+					}
 				}
 			}
 
@@ -852,38 +877,55 @@ namespace ezreal
 			{
 				killsteal->add_separator("ks.ac", "Killsteal Settings");
 				settings::killsteal::killsteal_enable = killsteal->add_checkbox("use.ks", "Enabled killsteal", true);
-				killsteal->add_separator("seen.w.q", "Q Settings");
-				settings::killsteal::use_q = killsteal->add_checkbox("use.q", "Use Q", true);
-				killsteal->add_separator("seen.e", "E Settings");
-				settings::killsteal::use_e_q = killsteal->add_checkbox("use.e.q", "Use E & Q", false);
-				killsteal->add_separator("seen.r", "R Settings");
-				settings::killsteal::use_r = killsteal->add_checkbox("use.r", "Use R", false);
+
+				auto q_killsteal = killsteal->add_tab("q.settings", "Q Settings");
+				q_killsteal->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+				{
+					settings::killsteal::use_q = q_killsteal->add_checkbox("use.q", "Use Q", true);
+				}
+
+				auto e_killsteal = killsteal->add_tab("e.settings", "E Settings");
+				e_killsteal->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+				{
+					settings::killsteal::use_e_q = e_killsteal->add_checkbox("use.e.q", "Use E & Q", false);
+				}
+
+				auto r_killsteal = killsteal->add_tab("r.settings", "R Settings");
+				r_killsteal->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+				{
+					settings::killsteal::use_r = r_killsteal->add_checkbox("use.r", "Use R", false);
+				}
 			}
 
 			auto draw_settings = main_tab->add_tab("drawings", "Drawings Settings");
 			{
-				auto q_s = draw_settings->add_tab("drawings.settingsQ", "Q Settings");
+				auto q_draw = draw_settings->add_tab("drawings.settingsQ", "Q Settings");
+				q_draw->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				{
-					settings::draw::draw_range_q = q_s->add_checkbox("drawingQ", "Draw Q range", true);
+					settings::draw::draw_range_q = q_draw->add_checkbox("drawingQ", "Draw Q range", true);
 				}
-				auto w_s = draw_settings->add_tab("drawings.settingsW", "W Settings");
+
+				auto w_draw = draw_settings->add_tab("drawings.settingsW", "W Settings");
+				w_draw->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 				{
-					settings::draw::draw_range_w = w_s->add_checkbox("drawingW", "Draw W range", true);
+					settings::draw::draw_range_w = w_draw->add_checkbox("drawingW", "Draw W range", true);
 				}
 			}
 
 			auto automatic_settings = main_tab->add_tab("automatic", "Automatic Settings");
 			{
-				auto e_g = automatic_settings->add_tab("e.settings", "E Settings");
+				auto e_automatic = automatic_settings->add_tab("e.settings", "E Settings");
+				e_automatic->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 				{
-					settings::automatic::e_gapclose = e_g->add_checkbox("use.e", "Use E on Gapclosers", true);
+					settings::automatic::e_gapclose = e_automatic->add_checkbox("use.e", "Use E on Gapclosers", true);
 				}
 			}
 		}
 
 
+
 		{
-			Permashow::Instance.Init(main_tab);
+			Permashow::Instance.Init("Trent AIO");
 			Permashow::Instance.AddElement("Auto Q", settings::combo::auto_q);
 			Permashow::Instance.AddElement("R Manual", settings::combo::semi_r);
 			Permashow::Instance.AddElement("Farm key", settings::farm_key);

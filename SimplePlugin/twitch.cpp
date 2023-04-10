@@ -1,5 +1,4 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
-#include "../plugin_sdk/plugin_sdk.hpp"
 #include "twitch.h"
 #include "permashow.hpp"
 
@@ -17,13 +16,9 @@ namespace twitch
     namespace draw_settings
     {
         TreeEntry* draw_range_q = nullptr;
-        TreeEntry* q_color = nullptr;
         TreeEntry* draw_range_w = nullptr;
-        TreeEntry* w_color = nullptr;
         TreeEntry* draw_range_e = nullptr;
-        TreeEntry* e_color = nullptr;
         TreeEntry* draw_range_r = nullptr;
-        TreeEntry* r_color = nullptr;
         TreeEntry* draw_e_stacks_time = nullptr;
         TreeEntry* draw_damage_e = nullptr;
         TreeEntry* draw_q_timeleft = nullptr;
@@ -40,8 +35,6 @@ namespace twitch
         TreeEntry* use_q = nullptr;
         TreeEntry* use_w = nullptr;
         TreeEntry* w_mode = nullptr;
-        TreeEntry* w_dont_use_on_q = nullptr;
-        TreeEntry* w_dont_use_on_r = nullptr;
         TreeEntry* w_dont_use_if_killable_by_x_aa = nullptr;
         TreeEntry* use_e = nullptr;
         TreeEntry* e_if_target_leaving_range = nullptr;
@@ -109,11 +102,14 @@ namespace twitch
     void on_after_attack_orbwalker(game_object_script target);
     void on_gapcloser(game_object_script sender, antigapcloser::antigapcloser_args* args);
 
+    
     void w_logic();
     void e_logic();
     void r_logic();
 
 
+     
+    
     hit_chance get_hitchance(TreeEntry* entry);
     inline void draw_dmg_rl(game_object_script target, float damage, unsigned long color);
     int get_twitch_e_stacks(game_object_script target);
@@ -127,9 +123,10 @@ namespace twitch
         r = plugin_sdk->register_spell(spellslot::r, 1100);
         b = plugin_sdk->register_spell(spellslot::recall, 0);
 
-        main_tab = menu->create_tab("TrentAIO", "Trent Twitch");
+        main_tab = menu->create_tab("TrentAIO", "TrentAIO Twitch");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
+            main_tab->add_separator(myhero->get_model() + "TrentAIO", "TrentAIO Twitch");
 
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo Settings");
             {
@@ -222,6 +219,7 @@ namespace twitch
 
             auto draw_settings = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings Settings");
             {
+                float color[] = { 0.0f, 1.0f, 1.0f, 1.0f };
 
                 draw_settings::draw_range_q = draw_settings->add_checkbox(myhero->get_model() + ".draw.q", "Draw Q range", true);
                 draw_settings::draw_range_w = draw_settings->add_checkbox(myhero->get_model() + ".draw.w", "Draw W range", true);
@@ -250,17 +248,15 @@ namespace twitch
             }
         }
 
- 
+
         {
-            Permashow::Instance.Init(main_tab);
+            Permashow::Instance.Init("TrentAIO");
             Permashow::Instance.AddElement("Spell Farm", laneclear::spell_farm);
             Permashow::Instance.AddElement("Stealth Recall", misc::stealth_recall_key);
         }
 
-
         antigapcloser::add_event_handler(on_gapcloser);
 
-  
         event_handler<events::on_update>::add_callback(on_update);
         event_handler<events::on_draw>::add_callback(on_draw);
         event_handler<events::on_after_attack_orbwalker>::add_callback(on_after_attack_orbwalker);
@@ -268,32 +264,35 @@ namespace twitch
 
     void unload()
     {
-
+   
         plugin_sdk->remove_spell(q);
         plugin_sdk->remove_spell(w);
         plugin_sdk->remove_spell(e);
         plugin_sdk->remove_spell(r);
 
-     
         menu->delete_tab(main_tab);
 
 
         Permashow::Instance.Destroy();
 
- 
+
         antigapcloser::remove_event_handler(on_gapcloser);
 
+ 
         event_handler<events::on_update>::remove_handler(on_update);
         event_handler<events::on_draw>::remove_handler(on_draw);
         event_handler<events::on_after_attack_orbwalker>::remove_handler(on_after_attack_orbwalker);
     }
 
+   
     void on_update()
     {
         if (myhero->is_dead())
         {
             return;
         }
+
+
         if (orbwalker->can_move(0.05f))
         {
             if (q->is_ready() && b->is_ready() && misc::stealth_recall->get_bool() && misc::stealth_recall_key->get_bool())
@@ -440,13 +439,10 @@ namespace twitch
             auto w_mode = combo::w_mode->get_int();
             if ((w_mode == 0 && myhero->get_distance(target) > myhero->get_attack_range()) || w_mode == 1)
             {
-                if  (!myhero->has_buff(buff_hash("TwitchFullAutomatic")))
+                int value = combo::w_dont_use_if_killable_by_x_aa->get_int();
+                if (value == 0 || myhero->get_auto_attack_damage(target) * value < target->get_real_health())
                 {
-                    int value = combo::w_dont_use_if_killable_by_x_aa->get_int();
-                    if (value == 0 || myhero->get_auto_attack_damage(target) * value < target->get_real_health())
-                    {
-                        w->cast(target, get_hitchance(hitchance::w_hitchance));
-                    }
+                    w->cast(target, get_hitchance(hitchance::w_hitchance));
                 }
             }
         }
@@ -629,14 +625,16 @@ namespace twitch
         }
 
         if (q->is_ready() && draw_settings::draw_range_q->get_bool())
-            drawCircle(myhero->get_position(), q->range(), 1000);
+            drawCircle(myhero->get_position(), q->range(), 2000);
 
         if (w->is_ready() && draw_settings::draw_range_w->get_bool())
-            drawCircle(myhero->get_position(), w->range(), 1000);
+            drawCircle(myhero->get_position(), w->range(), 2000);
         if (e->is_ready() && draw_settings::draw_range_e->get_bool())
-            drawCircle(myhero->get_position(), e->range(), 1000);
+            drawCircle(myhero->get_position(), e->range(), 2000);
+
         if (r->is_ready() && draw_settings::draw_range_r->get_bool())
-            drawCircle(myhero->get_position(), r->range(), 1000);
+            drawCircle(myhero->get_position(), r->range(), 2000);
+
         if (e->is_ready() && draw_settings::draw_damage_e->get_bool())
         {
             for (auto& enemy : entitylist->get_enemy_heroes())
@@ -713,15 +711,12 @@ namespace twitch
         {
             if (target->is_ai_hero() && ((orbwalker->combo_mode() && combo::use_w->get_bool()) || (orbwalker->harass() && harass::use_w->get_bool())))
             {
-                if ((!combo::w_dont_use_on_q->get_bool() || !myhero->has_buff(buff_hash("TwitchHideInShadows"))) && (!combo::w_dont_use_on_r->get_bool() || !myhero->has_buff(buff_hash("TwitchFullAutomatic"))))
+                int value = combo::w_dont_use_if_killable_by_x_aa->get_int();
+                if (value == 0 || myhero->get_auto_attack_damage(target) * value < target->get_real_health())
                 {
-                    int value = combo::w_dont_use_if_killable_by_x_aa->get_int();
-                    if (value == 0 || myhero->get_auto_attack_damage(target) * value < target->get_real_health())
+                    if (w->cast(target, get_hitchance(hitchance::w_hitchance)))
                     {
-                        if (w->cast(target, get_hitchance(hitchance::w_hitchance)))
-                        {
-                            return;
-                        }
+                        return;
                     }
                 }
             }
@@ -774,5 +769,3 @@ namespace twitch
         return 0;
     }
 };
-
-

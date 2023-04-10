@@ -1,11 +1,10 @@
 #include "permashow.hpp"
 #include <array>
-#include <cmath>
-#include <chrono>
 
 TreeTab* permashow = nullptr;
-TreeEntry* permashow_enabled;
+
 TreeEntry* permashow_fontsize;
+
 
 TreeEntry* permashow_pos_x;
 TreeEntry* permashow_pos_y;
@@ -18,42 +17,38 @@ TreeEntry* title_background_color;
 TreeEntry* text_color;
 
 const std::int32_t padding_x = 14;
-const std::int32_t padding_y = 14;
+const std::int32_t padding_y = 11;
 
 bool permashow_clicked = false;
 bool permashow_update = false;
 
 Permashow Permashow::Instance;
 
-const float gold_r = 255 / 255.f;
-const float gold_g = 215 / 255.f;
-const float gold_b = 0 / 255.f;
+Permashow& GetPermashow()
+{
+	if (!Permashow::Instance.Initialized)
+		Permashow::Instance.Init();
 
-uint32_t GetColorWithAnimation(float speed) {
-	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
-	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-	float time = std::fmod(millis * speed / 1000.0f, 1.0f);
-
-	int a = static_cast<int>(round(std::sin(time * 2 * M_PI) * 127.5f + 127.5f));
-
-	int r = static_cast<int>(round(gold_r * 255));
-	int g = static_cast<int>(round(gold_g * 255));
-	int b = static_cast<int>(round(gold_b * 255));
-
-	return MAKE_COLOR(r, g, b, a);
+	return Permashow::Instance;
 }
 
-uint32_t GetRainbowColor(float speed) {
-	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
-	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-	float time = std::fmod(millis * speed / 1000.0f, 1.0f);
+void draw_outlined_text(const vector& position, unsigned long color, unsigned long outline_color, int font_size, const std::string& text)
+{
+	// Draw the outline
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			if (x != 0 || y != 0) {
+				draw_manager->add_text_on_screen(position + vector(x, y), outline_color, font_size, "%s", text.c_str());
+			}
+		}
+	}
 
-	int r = static_cast<int>(round(std::sin(time * 2 * M_PI) * 127.5f + 127.5f));
-	int g = static_cast<int>(round(std::sin(time * 2 * M_PI + 2 * M_PI / 3) * 127.5f + 127.5f));
-	int b = static_cast<int>(round(std::sin(time * 2 * M_PI + 4 * M_PI / 3) * 127.5f + 127.5f));
-	return MAKE_COLOR(r, g, b, 255);
+	// Draw the actual text
+	draw_manager->add_text_on_screen(position, color, font_size, "%s", text.c_str());
 }
 
+
+std::map<TreeEntry*, std::string> original_display_names;
 void Permashow_MenuElementChange(TreeEntry* element)
 {
 	auto it = std::find_if(Permashow::Instance.PermashowElements.begin(), Permashow::Instance.PermashowElements.end(), [element](const PermashowElement& perma_element)
@@ -64,81 +59,88 @@ void Permashow_MenuElementChange(TreeEntry* element)
 	if (it == Permashow::Instance.PermashowElements.end())
 		return;
 
-	switch (element->element_type()) {
-	case TreeEntryType::Checkbox:
-	case TreeEntryType::Hotkey:
-
-		std::string output_text = "";
-		if (element->element_type() == TreeEntryType::Hotkey) {
-			output_text.append("[");
-			auto virtual_key = it->AssignedMenuElement->get_int();
-			switch (virtual_key) {
-			case 0:
-				output_text.append("None");
-				break;
-			case 4:
-				output_text.append("MB3");
-				break;
-			case 5:
-				output_text.append("MB4");
-				break;
-			case 6:
-				output_text.append("MB5");
-				break;
-			case 7:
-				output_text.append("None");
-				break;
-			case 112:
-				output_text.append("F1");
-				break;
-			case 113:
-				output_text.append("F2");
-				break;
-			case 114:
-				output_text.append("F3");
-				break;
-			case 115:
-				output_text.append("F4");
-				break;
-			case 116:
-				output_text.append("F5");
-				break;
-			case 117:
-				output_text.append("F6");
-				break;
-			case 118:
-				output_text.append("F7");
-				break;
-			case 119:
-				output_text.append("F8");
-				break;
-			case 120:
-				output_text.append("F9");
-				break;
-			case 121:
-				output_text.append("F10");
-				break;
-			case 122:
-				output_text.append("F11");
-				break;
-			case 123:
-				output_text.append("F12");
-				break;
-			default:
-				char key = static_cast<char>(virtual_key);
-				output_text.append(std::string(1, key));
-				break;
-			}
-			output_text.append("] ");
-		}
-		element->get_bool() ? output_text.append("Enabled") : output_text.append("Disabled");
-		it->Value = output_text;
-		it->ValueColor = element->get_bool() ? MAKE_COLOR(0, 255, 0, 255) : MAKE_COLOR(255, 0, 0, 255);
-		break;
+	// Store the original display name in the map if it is not already present
+	if (original_display_names.find(element) == original_display_names.end()) {
+		original_display_names[element] = element->display_name();
 	}
+	std::string output_text = "";
+	if (element->element_type() == TreeEntryType::Hotkey) {
+		auto virtual_key = it->AssignedMenuElement->get_int();
+		output_text.append("[");
+		switch (virtual_key) {
+		case 0:
+			output_text.append("None");
+			break;
+		case 4:
+			output_text.append("MB3");
+			break;
+		case 5:
+			output_text.append("MB4");
+			break;
+		case 6:
+			output_text.append("MB5");
+			break;
+		case 7:
+			output_text.append("None");
+			break;
+		case 112:
+			output_text.append("F1");
+			break;
+		case 113:
+			output_text.append("F2");
+			break;
+		case 114:
+			output_text.append("F3");
+			break;
+		case 115:
+			output_text.append("F4");
+			break;
+		case 116:
+			output_text.append("F5");
+			break;
+		case 117:
+			output_text.append("F6");
+			break;
+		case 118:
+			output_text.append("F7");
+			break;
+		case 119:
+			output_text.append("F8");
+			break;
+		case 120:
+			output_text.append("F9");
+			break;
+		case 121:
+			output_text.append("F10");
+			break;
+		case 122:
+			output_text.append("F11");
+			break;
+		case 123:
+			output_text.append("F12");
+			break;
+		default:
+			char key = static_cast<char>(virtual_key);
+			output_text.append(std::string(1, key));
+			break;
+		}
+		output_text.append("] ");
+	}
+
+
+	// Prepend the hotkey to the original display name
+	std::string display_name_with_hotkey = output_text + original_display_names[element];
+	element->set_display_name(display_name_with_hotkey);
+
+	// Change the "Enabled" and "Disabled" text to "On" and "Off"
+	element->get_bool() ? output_text = "ON" : output_text = "OFF";
+	it->Value = output_text;
+	it->ValueColor = element->get_bool() ? MAKE_COLOR(80, 255, 140, 255) : MAKE_COLOR(255, 127, 80, 255);
 
 	permashow_update = true;
 }
+
+
 
 void Permashow_FontChange(TreeEntry*)
 {
@@ -153,8 +155,10 @@ void Permashow_OnDraw()
 		permashow_update = false;
 	}
 
-	if (!permashow_enabled->get_bool())
-		return;
+	//Update position
+	//
+
+
 
 	point2 p = game_input->get_game_cursor_pos();
 
@@ -182,6 +186,8 @@ void Permashow_OnDraw()
 		permashow_pos_y->set_int(p.y - Permashow::Instance.drag_offset.y);
 	}
 
+	//Draw permashow
+	//
 	auto font_size = permashow_fontsize->get_int();
 
 	vector position = vector(permashow_pos_x->get_int(), permashow_pos_y->get_int());
@@ -189,31 +195,27 @@ void Permashow_OnDraw()
 
 	draw_manager->add_filled_rect(position, position + box_size, background_color->get_color());
 	draw_manager->add_filled_rect(position, position + Permashow::Instance.TitleBoxSize, title_background_color->get_color());
-	draw_manager->add_rect(position, position + Permashow::Instance.TitleBoxSize, GetColorWithAnimation(1.0f));
-	draw_manager->add_rect(position, position + box_size, GetColorWithAnimation(1.0f));
+	draw_manager->add_rect(position, position + Permashow::Instance.TitleBoxSize, border_color->get_color());
+	draw_manager->add_rect(position, position + box_size, border_color->get_color());
 
-	draw_manager->add_text_on_screen(position + (Permashow::Instance.TitleBoxSize / 2.f) - (Permashow::Instance.TitleSize / 2.f), GetRainbowColor(1.0f), font_size, "%s", Permashow::Instance.Title.c_str());
-
+	vector title_position = position + vector((Permashow::Instance.TitleBoxSize.x - Permashow::Instance.TitleSize.x) / 2.f, (Permashow::Instance.TitleBoxSize.y - Permashow::Instance.TitleSize.y) / 2.f);
+	unsigned long outline_color = MAKE_COLOR(33, 3, 33, 199); // Define the outline color
+	unsigned long outline_color1 = MAKE_COLOR(0, 0, 0, 255); // Define the outline color
+	draw_outlined_text(title_position, title_color->get_color(), outline_color, font_size, Permashow::Instance.Title);
 	for (auto& element : Permashow::Instance.PermashowElements) {
-		draw_manager->add_text_on_screen(
-			position + element.NamePos,
+		draw_outlined_text(
+			position + element.NamePos + vector(0, 5),
 			text_color->get_color(),
+			outline_color1,
 			font_size,
-			"%s",
 			element.AssignedMenuElement ? element.AssignedMenuElement->display_name().c_str() : element.Name.c_str()
 		);
 
-		draw_manager->add_line_on_screen(
-			position + element.SeperatorPos,
-			position + element.SeperatorPos + vector(0, Permashow::Instance.SeperatorHeight),
-			separator_color->get_color()
-		);
-
-		draw_manager->add_text_on_screen(
-			position + element.ValuePos,
+		draw_outlined_text(
+			position + element.ValuePos + vector(0, 5),
 			element.ValueColor,
+			outline_color1,
 			font_size,
-			"%s",
 			element.Value.c_str()
 		);
 	}
@@ -250,7 +252,7 @@ void Permashow::Update()
 	auto element_height = max_text_height + padding_y;
 	auto current_element_y = element_height;
 
-	box_size.x = max_name_width + max_value_width + (padding_x * 3);
+	box_size.x = max_name_width + max_value_width + (padding_x * 3.1);
 
 	for (auto& element : PermashowElements)
 	{
@@ -266,7 +268,7 @@ void Permashow::Update()
 
 	TitleBoxSize = vector(box_size.x, element_height);
 	SeperatorHeight = element_height - 12;
-	box_size.y = current_element_y;
+	box_size.y = current_element_y + 12;
 }
 
 void Permashow::AddElement(std::string name, TreeEntry* element)
@@ -278,28 +280,26 @@ void Permashow::AddElement(std::string name, TreeEntry* element)
 	Permashow_MenuElementChange(element);
 }
 
-void Permashow::Init(TreeTab* main_tab, std::string title)
+void Permashow::Init(std::string title)
 {
 	Initialized = true;
-	permashow = main_tab->add_tab("trentaio.permashow", "Permashow");
+	permashow = menu->create_tab("trentaio.permashow", "Trent AIO - Permashow");
 	{
-		permashow_enabled = permashow->add_checkbox("trentaio.permashow.enabled", "Enabled", true);
-		//permashow->set_assigned_active(permashow_enabled);
 
-		permashow_pos_x = permashow->add_slider("trentaio.permashow.posx", "Position X", int(renderer->screen_width() * 0.72f), 0, renderer->screen_width());
-		permashow_pos_y = permashow->add_slider("trentaio.permashow.posy", "Position Y", int(renderer->screen_height() * 0.74f), 0, renderer->screen_height());
 
-		permashow_fontsize = permashow->add_slider("trentaio.permashow.font", "Font size", 14, 9, 25);
+		permashow_pos_x = permashow->add_slider("permashow.posx", "Position X", int(renderer->screen_width() * 0.72f), 0, renderer->screen_width());
+		permashow_pos_y = permashow->add_slider("permashow.posy", "Position Y", int(renderer->screen_height() * 0.74f), 0, renderer->screen_height());
+
+		permashow_fontsize = permashow->add_slider("permashow.font", "Font size", 14, 9, 25);
 		permashow_fontsize->add_property_change_callback(Permashow_FontChange);
-		auto colors = permashow->add_tab("trentaio.permashow.colors", "Colors");
+		auto colors = permashow->add_tab("permashow.colors", "Colors");
 		{
-			background_color = colors->add_colorpick("trentaio.permashow.background_color", "Background", { 0.f / 255.f, 0.f / 255.f, 0.f / 255.f, 255.f / 255.f });
-			text_color = colors->add_colorpick("trentaio.permashow.text_color", "Color", { 45.f / 255.f, 101.f / 255.f, 96.f / 255.f, 255.f / 255.f });
-			border_color = colors->add_colorpick("trentaio.permashow.border_color", "Border", { 0.f / 255.f, 0.f / 255.f, 0.f / 255.f, 0.f / 255.f }); // Set this to an initial transparent color
-			separator_color = colors->add_colorpick("trentaio.permashow.separator_color", "Separator", { 0.f / 255.f, 55.f / 255.f, 49.f / 255.f, 255.f / 255.f });
-			title_color = colors->add_colorpick("trentaio.permashow.title_color", "Title", { 143.f / 255.f, 122.f / 255.f, 72.f / 255.f, 255.f / 255.f });
-			title_background_color = colors->add_colorpick("trentaio.permashow.title_background_color", "Title Background", { 19.f / 255.f, 30.f / 255.f, 32.f / 255.f, 230.f });
-			title_background_color = colors->add_colorpick("trentaio.permashow.title_background_color", "Title Background", { 19.f / 255.f, 30.f / 255.f, 32.f / 255.f, 230.f / 255.f });
+			background_color = colors->add_colorpick("permashow.background_color", "Background", { 11 / 255.f, 61 / 255.f, 145 / 255.f, 1.f }); // Navy Blue (#0B3D91)
+			text_color = colors->add_colorpick("permashow.text_color", "Color", { 245 / 255.f, 245 / 255.f, 220 / 255.f, 1.f }); // Beige (#F5F5DC)
+			border_color = colors->add_colorpick("permashow.border_color", "Border", { 211 / 255.f, 211 / 255.f, 211 / 255.f, 1.f }); // Light Gray (#D3D3D3)
+			separator_color = colors->add_colorpick("permashow.separator_color", "Separator", { 255 / 255.f, 255 / 255.f, 255 / 255.f, 1.f }); // White (#FFFFFF)
+			title_color = colors->add_colorpick("permashow.title_color", "Title", { 255 / 255.f, 215 / 255.f, 0 / 255.f, 1.f }); // Gold (#FFD700)
+			title_background_color = colors->add_colorpick("permashow.title_background_color", "Title Background", { 11 / 255.f, 61 / 255.f, 145 / 255.f, 1.f }); // Navy Blue (#0B3D91)
 		}
 	}
 

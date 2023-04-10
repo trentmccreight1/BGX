@@ -34,6 +34,8 @@ public:
 	void AddElement(std::string name, TreeEntry*);
 	void Update();
 
-	void Init(TreeTab* main_tab, std::string title = "TrentAIO");
+	void Init(std::string title = "Trent AIO");
 	void Destroy();
 };
+
+Permashow& GetPermashow();

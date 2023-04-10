@@ -31,6 +31,9 @@
     <ClCompile Include="utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="rengar.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -46,5 +49,8 @@
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="twitch.h" />
     <ClInclude Include="utils.hpp" />
+    <ClInclude Include="rengar.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
