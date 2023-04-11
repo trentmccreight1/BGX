@@ -193,7 +193,7 @@ namespace ezreal
 
 					float opposite_range = 450;
 					vector opposite_direction = (from - to).normalized();
-					vector new_position = from.extend(from + opposite_direction, opposite_range);
+					vector new_position = from + opposite_direction * opposite_range;
 
 					if (new_position.is_under_enemy_turret() || new_position.is_wall())
 					{
