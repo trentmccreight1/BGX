@@ -31,7 +31,6 @@ Permashow& GetPermashow()
 
 	return Permashow::Instance;
 }
-
 void draw_outlined_text(const vector& position, unsigned long color, unsigned long outline_color, int font_size, const std::string& text)
 {
 	// Draw the outline
