@@ -165,6 +165,7 @@
     <ClCompile Include="ezreal.cpp" />
     <ClCompile Include="permashow.cpp" />
     <ClCompile Include="rengar.cpp" />
+    <ClCompile Include="riven.cpp" />
     <ClCompile Include="twitch.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
@@ -175,6 +176,7 @@
     <ClInclude Include="ezreal.h" />
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="rengar.h" />
+    <ClInclude Include="riven.h" />
     <ClInclude Include="twitch.h" />
     <ClInclude Include="utils.hpp" />
   </ItemGroup>

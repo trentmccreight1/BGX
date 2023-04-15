@@ -2,10 +2,11 @@
 #include "twitch.h"
 #include "ezreal.h"
 #include "rengar.h"
+#include "riven.h"""
 
 PLUGIN_NAME("TrentAIO");
 PLUGIN_TYPE(plugin_type::champion);
-SUPPORTED_CHAMPIONS(champion_id::Ezreal, champion_id::Twitch, champion_id::Rengar);
+SUPPORTED_CHAMPIONS(champion_id::Ezreal, champion_id::Twitch, champion_id::Rengar, champion_id::Riven);
 PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
 {
     DECLARE_GLOBALS(plugin_sdk_good);
@@ -23,6 +24,9 @@ PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
         break;
     case champion_id::Rengar:
         rengar::load();
+        break;
+    case champion_id::Riven:
+        riven::load();
         break;
 
     default:
@@ -50,6 +54,9 @@ PLUGIN_API void on_sdk_unload()
         break;
     case champion_id::Rengar:
         rengar::unload();
+        break;
+    case champion_id::Riven:
+        riven::unload();
         break;
     default:
         break;
