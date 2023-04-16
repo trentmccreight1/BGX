@@ -68,6 +68,7 @@ namespace riven
 		TreeEntry* dont_use_e_in_aa_range;
 		TreeEntry* e_in_aa_range_unless_hp;
 		TreeEntry* auto_q_expire;
+		TreeEntry* save_r;
 	}
 	namespace harass
 	{
@@ -146,6 +147,7 @@ namespace riven
 				combo->add_separator(".comboSep", "Combo");
 				combo::auto_q_expire = combo->add_checkbox(".comboAutoQExpire", "Auto Q If About To Expire", true);
 				combo::dont_cast_r1_if_killable_without = combo->add_checkbox(".dontCastR1", "Don't Use R1 If Killable Without Ult", true);
+				combo::save_r = combo->add_hotkey("saver.key", "Save R", TreeHotkeyMode::Toggle, 0x53, true);
 				combo::dont_use_e_in_aa_range = combo->add_checkbox(".dontUseEInAA", "Don't Use E If Target In AA Range", true);
 				combo::e_in_aa_range_unless_hp = combo->add_slider(".dontUseEInAAUnlessHP", "  ^~ ignore if my hp is lower than", 60, 1, 99);
 				combo::flash_ks_burst = combo->add_checkbox(".flashKillstealBurst", "Enable Flash Burst (if killable)", true);
@@ -228,6 +230,7 @@ namespace riven
 			Permashow::Instance.Init("Trent AIO");
 			Permashow::Instance.AddElement("Spell Farm", laneclear::use_spells_laneclear);
 			Permashow::Instance.AddElement("Flash Burst Key", combo::flash_ks_burst_key);
+			Permashow::Instance.AddElement("Save R Key", combo::save_r);
 		}
 
 		antigapcloser::add_event_handler(on_gapcloser);
@@ -468,6 +471,11 @@ namespace riven
 		auto target = target_selector->get_target(550, damage_type::physical);
 
 		if (target == nullptr || !target->is_valid_target()) return;
+
+		if (combo::save_r->get_bool())
+		{
+			return;
+		}
 
 		if (combo::dont_cast_r1_if_killable_without->get_bool() && is_killable_without_r_full_combo(target))
 		{

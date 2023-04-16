@@ -609,7 +609,10 @@ namespace ezreal
 					}
 				}
 
-				if (name == "SRU_Krug11.1.1" || name == "SRU_Krug5.1.1") continue;
+				std::regex krug_regex("krug", std::regex_constants::icase);
+
+
+				if (std::regex_search(name, krug_regex)) continue;
 				if (spells::w->is_ready() && settings::jungleclear::use_w_epicmonster->get_bool() && monster->is_epic_monster())
 				{
 					if (monster->get_distance(myhero) < spells::w->range())
